@@ -1,0 +1,371 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<bpr:release xmlns:bpr="http://www.blueprism.co.uk/product/release">
+    <bpr:name>Extended Surface Automation_4_29_2021</bpr:name>
+    <bpr:release-notes />
+    <bpr:created>2021-04-29 14:47:15Z</bpr:created>
+    <bpr:package-id>19</bpr:package-id>
+    <bpr:package-name>Extended Surface Automation</bpr:package-name>
+    <bpr:user-created-by>admin</bpr:user-created-by>
+    <bpr:contents count="2">
+        <object id="e37756c0-2ea5-4a1d-9ac8-036ff590da8f" name="Global Surface Automation" xmlns="http://www.blueprism.co.uk/product/process"><process name="Global Surface Automation" version="1.0" bpversion="7.0.0.35305" narrative="Helper functions for global surface manipulation. Operates on the entire screen instead of a specific application." byrefcollection="true" type="object" runmode="Exclusive"><appdef><element name="Application Root"><id>f735c0bf-b269-4917-8098-2101039da56f</id><type>Application</type><basetype>Application</basetype><datatype>unknown</datatype><diagnose>False</diagnose></element></appdef><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view><preconditions /><endpoint narrative="" /><subsheet subsheetid="ecc43d70-674c-4162-a6f2-2d8ffc8b21ad" type="CleanUp" published="True"><name>Clean Up</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="c6b25882-a278-4281-997f-a1ad112559a9" type="Normal" published="True"><name>Click Image Center</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="b26f1128-b684-4367-b8b6-c570d2839572" type="Normal" published="True"><name>Click Image Offset</name><view><camerax>51</camerax><cameray>-84</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="38d6d29f-2376-413b-95ef-c002802269c7" type="Normal" published="True"><name>Create Tolerance (Absolute)</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="17ea9148-52fe-4e59-9810-687c9d6bcf87" type="Normal" published="True"><name>Create Tolerance (Percentage)</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="ac71f86f-7103-4fd1-8f8e-34b8cca5a569" type="Normal" published="True"><name>Find Image</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3" type="Normal" published="True"><name>Wait for Image Appearance</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="8101e12e-c18b-48b2-97b2-4da4cfd7e9f7" type="Normal" published="True"><name>Wait for Image Disappearance</name><view><camerax>0</camerax><cameray>-21</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="0057e9bc-40c5-4e68-8277-ac5727dcdcf2" type="Normal" published="True"><name>Move mouse (fast)</name><view><camerax>124</camerax><cameray>-84</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="2fd21d4f-3b26-45b9-b07a-a7267caf5d44" type="Normal" published="True"><name>Move mouse (tweened)</name><view><camerax>-68</camerax><cameray>-84</cameray><zoom version="2">1.25</zoom></view></subsheet><subsheet subsheetid="0a34c9e5-2a2b-48e0-9964-1047456c956b" type="Normal" published="True"><name>Move mouse (tweened with wait)</name><view><camerax>-68</camerax><cameray>-84</cameray><zoom version="2">1.25</zoom></view></subsheet><stage stageid="209bddde-abe0-436a-bc87-4956c0e6de56" name="Start" type="Start"><loginhibit /><display x="15" y="-105" /><onsuccess>c0846332-3549-4baa-b98d-cb2f77805512</onsuccess></stage><stage stageid="c0846332-3549-4baa-b98d-cb2f77805512" name="End" type="End"><loginhibit /><display x="15" y="90" /></stage><stage stageid="1fb5d7a9-3974-4b91-983e-2cc4d7cd8ef5" name="Stage1" type="ProcessInfo"><display x="-195" y="-105" w="150" h="90" /><references><reference>System.dll</reference><reference>System.Data.dll</reference><reference>System.Xml.dll</reference><reference>System.Drawing.dll</reference><reference>System.Windows.Forms.dll</reference></references><imports><import>System</import><import>System.Drawing</import><import>System.Data</import><import>System.Drawing.Imaging</import><import>System.Windows.Forms</import></imports><language>visualbasic</language><globalcode><![CDATA[]]></globalcode><code><![CDATA[Public Declare Sub mouse_event Lib "user32" (ByVal dwFlags As Integer, ByVal dx As Integer, ByVal dy As Integer, ByVal dwData As Integer, ByVal dwExtraInfo As Integer)
+
+Public Enum MouseEventFlags As UInteger
+     MOUSEEVENTF_ABSOLUTE = &H8000
+     MOUSEEVENTF_LEFTDOWN = &H2
+     MOUSEEVENTF_LEFTUP = &H4
+     MOUSEEVENTF_MIDDLEDOWN = &H20
+     MOUSEEVENTF_MIDDLEUP = &H40
+     MOUSEEVENTF_MOVE = &H1
+     MOUSEEVENTF_RIGHTDOWN = &H8
+     MOUSEEVENTF_RIGHTUP = &H10
+     MOUSEEVENTF_XDOWN = &H80
+     MOUSEEVENTF_XUP = &H100
+     MOUSEEVENTF_WHEEL = &H800
+     MOUSEEVENTF_HWHEEL = &H1000
+End Enum
+
+Private Structure Tolerance
+	Public RMin As Integer
+	Public RMax As Integer
+	Public GMin As Integer
+	Public GMax As Integer
+	Public BMin As Integer
+	Public BMax As Integer
+End Structure
+
+' Converts RGB mins/maxes into a tolerance string that can be returned to the caller for later use.
+Private Function CreateTolerance(rmin As Integer, rmax As Integer, gmin As Integer, gmax As Integer, bmin As Integer, bmax As Integer) As String
+	Return String.Format("{0}:{1};{2}:{3};{4}:{5}", rmin, rmax, gmin, gmax, bmin, bmax)
+End Function
+
+' Unmaps a string from the ##:##;##:##;##:## format.
+' ##:## each represent a color component in RGB order.
+Private Function GetToleranceFromString(ToleranceString As String) As Tolerance
+	If ToleranceString = "" Then
+		Return New Tolerance With { .Rmin = 0, .RMax = 0,
+								    .GMin = 0, .GMax = 0,
+									.BMin = 0, .BMax = 0 }
+	End If
+
+	Dim Components As String() = ToleranceString.Split(";")
+	If Components.Length <> 3 Then
+		Throw New Exception("Bad tolerance format")
+	End If
+
+	Dim Count As Integer = 0
+	Dim t As Tolerance = New Tolerance()
+	For Each Component As String In Components
+		Dim Fields As String() = Component.Split(":")
+		If Fields.Length <> 2 Then
+			Throw New Exception("Bad tolerance format" )
+		End If
+		For Each Field As String In Fields
+			Dim Value As Integer
+			If Not Int32.TryParse(Field, Value) Then
+				Throw New Exception("Bad tolerance value")
+			End If
+
+			If Value >= 0 AndAlso Value <= 255 Then
+				Select Case Count
+					Case 0: t.RMin = Value
+					Case 1: t.RMax = Value
+					Case 2: t.GMin = Value
+					Case 3: t.GMax = Value
+					Case 4: t.BMin = Value
+					Case 5: t.BMax = Value
+				End Select
+				Count = Count + 1
+			Else
+				Throw New Exception("Bad tolerance value")
+			End If
+		Next
+	Next
+End Function
+
+' Retrieves a bitmap of the primary display.
+Private Function GetScreenshot() As Bitmap
+	Dim ScreenSize As Size = New Size(My.Computer.Screen.Bounds.Width, My.Computer.Screen.Bounds.Height)
+	Dim ScreenGrab As New Bitmap(My.Computer.Screen.Bounds.Width, My.Computer.Screen.Bounds.Height)
+	Dim g As Graphics = Graphics.FromImage(ScreenGrab)
+	g.CopyFromScreen(New Point(0, 0), New Point(0, 0), ScreenSize)
+	Return ScreenGrab
+End Function
+
+' Finds a bitmap on another bitmap.
+Private Function FindBitmap(bmp1 As Bitmap, bmp2 As Bitmap, t As Tolerance) As Point
+	' Validate dimensions
+	If bmp2.Width > bmp1.Width OrElse bmp2.Height > bmp1.Height Then
+		Return New Point(-1, -1)
+	End If
+
+	' Lock the bits and get a reference to the bitmap data.
+	Dim Rect1 As New Rectangle(0, 0, bmp1.Width, bmp1.Height)
+	Dim Rect2 As New Rectangle(0, 0, bmp2.Width, bmp2.Height)
+	Dim bmpData1 As BitmapData = bmp1.LockBits(Rect1, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb)
+	Dim bmpData2 As BitmapData = bmp2.LockBits(Rect2, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb)
+
+	Dim ptr1 As IntPtr = bmpData1.Scan0
+	Dim ptr2 AS IntPtr = bmpData2.Scan0
+
+	' Set up the arrays that will hold the color values.
+	Dim bytes1 As Integer = Math.Abs(bmpData1.Stride) * bmp1.Height
+	Dim bytes2 AS Integer = Math.Abs(bmpData2.Stride) * bmp2.Height
+	Dim rgbValues1(bytes1 - 1) As Byte
+	Dim rgbValues2(bytes2 - 1) As Byte
+
+	' Perform a raw memory copy from the bitmap data to the byte arrays.
+	System.Runtime.InteropServices.Marshal.Copy(ptr1, rgbValues1, 0, bytes1)
+	System.Runtime.InteropServices.Marshal.Copy(ptr2, rgbValues2, 0, bytes2)
+
+	' Unlock the bits since they are no longer needed.
+	bmp1.UnlockBits(bmpData1)
+	bmp2.UnlockBits(bmpData2)
+				
+	Dim FoundMatch As Boolean = False
+
+	' Loops through the main bitmap until it finds a pixel matching the
+	' top-left pixel on the second bitmap.
+	For y1 As Integer = 0 To bmpData1.Height - bmpData2.Height - 1
+		For x1 As Integer = 0 To bmpData1.Width - bmpData2.Width - 1
+			Dim Index1 As Integer = (y1 * bmpData1.Stride) + (x1 * 3)
+			' The if statement is a bit complicated due to the adjustments for the color tolerance.
+			' Keep in mind, bitmaps are stored BGR not RGB.
+			If 		rgbValues1(Index1 + 0) >= rgbValues2(0) - t.BMin AndAlso rgbValues1(Index1 + 0) <= rgbValues2(0) + t.BMax _
+			AndAlso rgbValues1(Index1 + 1) >= rgbValues2(1) - t.GMin AndAlso rgbValues1(Index1 + 1) <= rgbValues2(1) + t.GMax _
+			AndAlso	rgbValues1(Index1 + 2) >= rgbValues2(2) - t.RMin AndAlso rgbValues1(Index1 + 2) <= rgbValues2(2) + t.RMax Then
+				' A matching pixel was found.
+				FoundMatch = True
+				Dim SubIndex1 As Integer = Index1
+				For y2 As Integer = 0 To bmpData2.Height - 1
+					For x2 As Integer = 0 To bmpData2.Width - 1
+						' Cycle over the second bitmap and compare to the first to see if the rest of it matches.
+						Dim Index2 As Integer = (y2 * bmpData2.Stride) + (x2 * 3)
+						If 		rgbValues1(SubIndex1 + 0) < rgbValues2(Index2 + 0) - t.BMin OrElse rgbValues1(SubIndex1 + 0) > rgbValues2(Index2 + 0) + t.BMax _
+						OrElse 	rgbValues1(SubIndex1 + 1) < rgbValues2(Index2 + 1) - t.GMin OrElse rgbValues1(SubIndex1 + 1) > rgbValues2(Index2 + 1) + t.GMax _
+						OrElse	rgbValues1(SubIndex1 + 2) < rgbValues2(Index2 + 2) - t.RMin OrElse rgbValues1(SubIndex1 + 2) > rgbValues2(Index2 + 2) + t.RMax Then
+							FoundMatch = False
+							GoTo ExitInnerFor ' Not ideal, but the only easy way to exit a dual for loop.
+						End If
+						
+						' The main bitmap is referenced via the index rather than X/Y coordinates.
+						' SubIndex1 holds the position of that index. Once x2 is at the end of
+						' a row, SubIndex1 has to be incremented to the next row as well.
+						If x2 = bmpData2.Width - 1 Then
+							SubIndex1 = SubIndex1 + bmpData1.Stride - (bmpData2.Width * 3)
+						End If
+						SubIndex1 = SubIndex1 + 3
+					Next
+				Next
+			End If
+			
+			' Check if a match was found
+			ExitInnerFor:
+			If FoundMatch Then
+				Return New Point(x1, y1)
+			End If
+		Next
+	Next
+
+	Return New Point(-1, -1)
+End Function
+
+Private Sub wait(ByVal seconds As Integer)
+    For i As Integer = 0 To seconds * 100
+        System.Threading.Thread.Sleep(1)
+        Application.DoEvents()
+    Next
+End Sub]]></code></stage><stage stageid="0987d160-c6f5-4ce0-a995-ee504c29c8ac" name="Clean Up" type="SubSheetInfo"><subsheetid>ecc43d70-674c-4162-a6f2-2d8ffc8b21ad</subsheetid><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="aa5ac140-7fee-4aa4-bf46-e2d2da618416" name="Start" type="Start"><subsheetid>ecc43d70-674c-4162-a6f2-2d8ffc8b21ad</subsheetid><loginhibit /><display x="15" y="-105" /><onsuccess>604249b7-3707-453b-99f5-967b46aaacb6</onsuccess></stage><stage stageid="604249b7-3707-453b-99f5-967b46aaacb6" name="End" type="End"><subsheetid>ecc43d70-674c-4162-a6f2-2d8ffc8b21ad</subsheetid><loginhibit /><display x="15" y="90" /></stage><stage stageid="1faac003-e23e-41a2-9e27-9918ad618a9d" name="Click Image Center" type="SubSheetInfo"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><narrative>Clicks the specified image in the center.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="1bbfafe3-fac5-447f-999b-c78264603ebe" name="Start" type="Start"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="image" name="Image" narrative="Image to search the screen for." stage="Image" /><input type="text" name="Tolerance" narrative="Color tolerance (Created via Create Tolerance) when finding the image." stage="Tolerance" /><input type="text" name="Mouse Button" narrative="Valid values are &quot;Left&quot; and &quot;Right&quot;; default is left click." stage="Mouse Button" /></inputs><onsuccess>9c433d48-74a1-4526-ab51-af7df820b6b6</onsuccess></stage><stage stageid="23afc984-12a1-422b-8464-95449d7d9e23" name="End" type="End"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><loginhibit /><display x="15" y="-15" /></stage><stage stageid="5ac59720-7ef2-44e7-aac5-f187b0aaf9b9" name="Note1" type="Note"><subsheetid>ecc43d70-674c-4162-a6f2-2d8ffc8b21ad</subsheetid><narrative>Clean Up Page
+
+This is an optional page where you might choose to perform some finalisation (or "cleanup") tasks as your business object is closed down.
+
+The cleanup action will be called automatically immediately after closing your business object at the end of a business process.
+
+You will not be able to call this action from a business process, nor will it be called at any other time than before the disposal of the business object.</narrative><display x="-180" y="60" w="180" h="230" /></stage><stage stageid="3aba4aab-b77c-4e27-8782-9f7648933c63" name="Note2" type="Note"><narrative>Initialise Page
+
+This is an optional page where you might choose to perform some initialisation tasks after your business object is loaded.
+
+The initialise action will be called automatically immediately after loading your business object.
+
+You will not be able to call this action from a business process, nor will it be called at any other time than after the creation of the object.</narrative><display x="-180" y="60" w="180" h="230" /></stage><stage stageid="2a32d2dd-8d78-4a25-99a0-753291296b66" name="Image" type="Data"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><display x="90" y="-105" /><datatype>image</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="42731ae7-be82-45d1-a09c-c2f806b0f318" name="Tolerance" type="Data"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><display x="135" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="2c5ccabd-35c2-4738-b8b5-db7332124ad6" name="Mouse Button" type="Data"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><display x="180" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="568fba9e-4e98-4519-ac3f-c13f15d190d5" name="Click Image Offset" type="SubSheetInfo"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><narrative>Finds an image and clicks an offset amount of pixels away from it.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="b4d5a159-8586-46e9-b78f-de8c2374622a" name="Start" type="Start"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="image" name="Image" narrative="Image to search the screen for." stage="Image" /><input type="text" name="Tolerance" narrative="Color tolerance (Created via Create Tolerance) when finding the image." stage="Tolerance" /><input type="text" name="Mouse Button" narrative="Valid values are &quot;Left&quot; and &quot;Right&quot;; default is Left click." stage="Mouse Button" /><input type="text" name="Offset Anchor" narrative="Specifies which part of the image to offset from. Defaults to center. Valid values are: Top-Left, Top-Center, Top-Right, Center-Left, Center, Center-Right, Bottom-Left, Bottom-Center, Bottom-Right" stage="Offset Anchor" /><input type="number" name="Offset X" narrative="Specifies how far to click out from the anchor on the X axis." stage="Offset X" /><input type="number" name="Offset Y" narrative="Specifies how far to click out from the anchor on the Y axis." stage="Offset Y" /></inputs><onsuccess>d5e2e67b-1180-4193-80e2-d05ee3529ecd</onsuccess></stage><stage stageid="68fc77c7-6302-492a-9b07-622ad3a7e409" name="End" type="End"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><loginhibit /><display x="15" y="-15" /></stage><stage stageid="175c3e74-281c-4739-a2f6-f2220f1235f3" name="Image" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="90" y="-105" /><datatype>image</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="f24c2115-75b4-4353-9a7d-9a06ff6e3378" name="Tolerance" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="135" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="24935714-b8bd-4b84-b45b-6acdf261a8eb" name="Mouse Button" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="180" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="7b0c897c-1bf7-4024-ab71-0cfd5031342a" name="Offset Anchor" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="225" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="e727c037-68f1-45f3-abdc-3ddd7f94d4ad" name="Offset X" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="270" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="45c276ff-ebd3-4eec-b560-dd81dc6ae99f" name="Offset Y" type="Data"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><display x="315" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="9c433d48-74a1-4526-ab51-af7df820b6b6" name="Click Image Offset" type="SubSheet"><subsheetid>c6b25882-a278-4281-997f-a1ad112559a9</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="image" name="Image" friendlyname="Image" narrative="Image to search the screen for." expr="[Image]" /><input type="text" name="Tolerance" friendlyname="Tolerance" narrative="Color tolerance (Created via Create Tolerance) when finding the image." expr="[Tolerance]" /><input type="text" name="Mouse Button" friendlyname="Mouse Button" narrative="Valid values are &quot;Left&quot; and &quot;Right&quot;; default is Left click." expr="[Mouse Button]" /><input type="text" name="Offset Anchor" friendlyname="Offset Anchor" narrative="Specifies which part of the image to offset from. Defaults to center. Valid values are: Top-Left, Top-Center, Top-Right, Center-Left, Center, Center-Right, Bottom-Left, Bottom-Center, Bottom-Right" expr="&quot;Center&quot;" /><input type="number" name="Offset X" friendlyname="Offset X" narrative="Specifies how far to click out from the anchor on the X axis." expr="0" /><input type="number" name="Offset Y" friendlyname="Offset Y" narrative="Specifies how far to click out from the anchor on the Y axis." expr="0" /></inputs><onsuccess>23afc984-12a1-422b-8464-95449d7d9e23</onsuccess><processid>b26f1128-b684-4367-b8b6-c570d2839572</processid></stage><stage stageid="d5e2e67b-1180-4193-80e2-d05ee3529ecd" name="Click_Image_Offset" type="Code"><subsheetid>b26f1128-b684-4367-b8b6-c570d2839572</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="image" name="Image" expr="[Image]" /><input type="text" name="Tol" expr="[Tolerance]" /><input type="text" name="Mouse_Button" expr="[Mouse Button]" /><input type="text" name="Offset_Anchor" expr="[Offset Anchor]" /><input type="number" name="Offset_X" expr="[Offset X]" /><input type="number" name="Offset_Y" expr="[Offset Y]" /></inputs><onsuccess>68fc77c7-6302-492a-9b07-622ad3a7e409</onsuccess><code><![CDATA[' Validate mouse input is an acceptable value
+If Mouse_Button <> "Left" AndAlso Mouse_Button <> "Right" Then
+	Throw New Exception("'" & Mouse_Button & "' is not a valid value for Mouse Button.")
+End If
+
+' Validate anchor is an acceptable value
+If 		Offset_Anchor <> "Top-Left" AndAlso Offset_Anchor <> "Top-Center" AndAlso Offset_Anchor <> "Top-Right" _
+AndAlso Offset_Anchor <> "Center-Left" AndAlso Offset_Anchor <> "Center" AndAlso Offset_Anchor <> "Center-Right" _
+AndAlso Offset_Anchor <> "Bottom-Left" AndAlso Offset_Anchor <> "Bottom-Center" AndAlso Offset_Anchor <> "Bottom-Right" Then
+	Throw New Exception("'" & Offset_Anchor & "' is not a valid value for Offset Anchor.")
+End If
+
+' Find the image
+Dim Screen As Bitmap = GetScreenshot()
+Dim p As Point = FindBitmap(Screen, Image, GetToleranceFromString(Tol))
+If p.X < 0 OrElse P.y < 0 Then
+	Throw New Exception("Failed to find image")
+End If
+
+' Set the anchor position
+Dim AnchorPoint As Point = New Point()
+Select Case Offset_Anchor
+	Case "Top-Left":		AnchorPoint.X = p.X						: AnchorPoint.Y = p.Y
+	Case "Top-Center":		AnchorPoint.X = p.X + Image.Width / 2	: AnchorPoint.Y = p.Y
+	Case "Top-Right":		AnchorPoint.X = p.X	+ Image.Width		: AnchorPoint.Y = p.Y
+	Case "Center-Left":		AnchorPoint.X = p.X						: AnchorPoint.Y = p.Y + Image.Height / 2
+	Case "Center":			AnchorPoint.X = p.X + Image.Width / 2	: AnchorPoint.Y = p.Y + Image.Height / 2
+	Case "Center-Right":	AnchorPoint.X = p.X	+ Image.Width		: AnchorPoint.Y = p.Y + Image.Height / 2
+	Case "Bottom-Left":		AnchorPoint.X = p.X						: AnchorPoint.Y = p.Y + Image.Height
+	Case "Bottom-Center":	AnchorPoint.X = p.X	+ Image.Width / 2	: AnchorPoint.Y = p.Y + Image.Height
+	Case "Bottom-Right":	AnchorPoint.X = p.X + Image.Width		: AnchorPoint.Y = p.Y + Image.Height
+End Select
+
+' Determine the mouse flags based on left/right click
+Dim MouseDown As MouseEventFlags
+Dim MouseUp As MouseEventFlags
+If Mouse_Button = "Left" Then
+	MouseDown = MouseEventFlags.MOUSEEVENTF_LEFTDOWN
+	MouseUp = MouseEventFlags.MOUSEEVENTF_LEFTUP
+ElseIf Mouse_Button = "Right" Then
+	MouseDown = MouseEventFlags.MOUSEEVENTF_RIGHTDOWN
+	MouseUp = MouseEventFlags.MOUSEEVENTF_RIGHTUP
+End If
+
+' Move the mouse, then send a mouse down and a mouse up event.
+' mouse_event uses a 0 - 65535 scale where 0,0 is the top left and 
+' 65535,65535 is the bottom right. Since we have units in pixels, we
+' need to make the adjustment from pixel units to screen coordinates.
+Dim CursorPos As New Point(AnchorPoint.X + Offset_X, AnchorPoint.Y + Offset_Y)
+System.Windows.Forms.Cursor.Position = CursorPos
+mouse_event(MouseDown Or MouseEventFlags.MOUSEEVENTF_ABSOLUTE, 
+			CursorPos.X * 65536 / Screen.Width + 1, _
+			CursorPos.Y * 65536 / Screen.Height + 1, 0, 0)
+mouse_event(MouseUp Or MouseEventFlags.MOUSEEVENTF_ABSOLUTE, 
+			CursorPos.X * 65536 / Screen.Width + 1, _
+			CursorPos.Y * 65536 / Screen.Height + 1, 0, 0)																]]></code></stage><stage stageid="dda96b2a-43b3-41c7-a823-4046c5d6663e" name="Create Tolerance (Absolute)" type="SubSheetInfo"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><narrative>Returns a specially-constructed tolerance string to be used by other pages for image comparisons. Each color component is specified as an absolute number indicating how much tolerance should be allowed. A tolerance of 8 means a color value of 100 will match a color value of 92.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="dd0f0049-c979-4a8a-8fe9-ce5f3e6443b2" name="Start" type="Start"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="number" name="Red Tolerance" narrative="Tolerance for the red color component specified as an absolute value." stage="Red Tolerance" /><input type="number" name="Green Tolerance" narrative="Tolerance for the green color component specified as an absolute value." stage="Green Tolerance" /><input type="number" name="Blue Tolerance" narrative="Tolerance for the blue color component specified as an absolute value." stage="Blue Tolerance" /></inputs><onsuccess>503965ad-3521-4183-9018-d29e73b18bde</onsuccess></stage><stage stageid="20fc9054-2031-45dc-a373-0496aa70185c" name="End" type="End"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><loginhibit /><display x="15" y="-15" /><outputs><output type="text" name="Tolerance String" narrative="Tolerance string used in other actions of this object." stage="Tolerance String" /></outputs></stage><stage stageid="c7641651-ffac-4cf1-b664-ca35248b59cd" name="Red Tolerance" type="Data"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><display x="90" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="09ea43bb-4c5a-4f0c-9cdf-b4abbf0764f9" name="Green Tolerance" type="Data"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><display x="135" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="90e44a43-43ff-4a61-bc9b-a504d370f037" name="Blue Tolerance" type="Data"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><display x="180" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="07a32fdb-38cd-43f9-98da-0e64b87cf14b" name="Tolerance String" type="Data"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><display x="90" y="-15" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="503965ad-3521-4183-9018-d29e73b18bde" name="Absolute_Tolerance" type="Code"><subsheetid>38d6d29f-2376-413b-95ef-c002802269c7</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="number" name="ra" expr="[Red Tolerance]" /><input type="number" name="ga" expr="[Green Tolerance]" /><input type="number" name="ba" expr="[Blue Tolerance]" /></inputs><outputs><output type="text" name="Tolerance_String" stage="Tolerance String" /></outputs><onsuccess>20fc9054-2031-45dc-a373-0496aa70185c</onsuccess><code><![CDATA[Dim rmax As Integer = Math.Min(Math.Abs(ra), 255)
+Dim gmax As Integer = Math.Min(Math.Abs(ga), 255)
+Dim bmax As Integer = Math.Min(Math.Abs(ba), 255)
+Tolerance_String = CreateTolerance(rmax, rmax, gmax, gmax, bmax, bmax)]]></code></stage><stage stageid="4f77fdf1-362d-44d6-9a40-df080594a7f8" name="Create Tolerance (Percentage)" type="SubSheetInfo"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><narrative>Returns a specially-constructed tolerance string to be used by other pages for image comparisons. Each color component is specified as a percentage indicating how much tolerance should be allowed. A 10% tolerance means a color value of 225 will match a color value of 200.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="84e406ac-46fa-4917-90d7-962734f3a51f" name="Start" type="Start"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="number" name="Red Tolerance Percent" narrative="Tolerance for the red color component specified as an absolute value." stage="Red Tolerance Percent" /><input type="number" name="Green Tolerance Percent" narrative="Tolerance for the green color component specified as an absolute value." stage="Green Tolerance Percent" /><input type="number" name="Blue Tolerance Percent" narrative="Tolerance for the blue color component specified as an absolute value." stage="Blue Tolerance Percent" /></inputs><onsuccess>3bba78bb-5d3f-484b-845f-c74f4f51d4a3</onsuccess></stage><stage stageid="f3a7c905-4fee-40e9-860e-0a6b42b891c7" name="End" type="End"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><loginhibit /><display x="15" y="-15" /><outputs><output type="text" name="Tolerance String" narrative="Tolerance string used in other actions of this object." stage="Tolerance String" /></outputs></stage><stage stageid="f87c527d-5b71-4501-8bcf-6c1a1232290b" name="Tolerance String" type="Data"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><display x="90" y="-15" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="3bba78bb-5d3f-484b-845f-c74f4f51d4a3" name="Percent_Tolerance" type="Code"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="number" name="rp" expr="[Red Tolerance Percent]" /><input type="number" name="gp" expr="[Green Tolerance Percent]" /><input type="number" name="bp" expr="[Blue Tolerance Percent]" /></inputs><outputs><output type="text" name="Tolerance_String" stage="Tolerance String" /></outputs><onsuccess>f3a7c905-4fee-40e9-860e-0a6b42b891c7</onsuccess><code><![CDATA[Dim rmax As Integer = Math.Min(Math.Abs(rp) * 255, 255)
+Dim gmax As Integer = Math.Min(Math.Abs(gp) * 255, 255)
+Dim bmax As Integer = Math.Min(Math.Abs(bp) * 255, 255)
+Tolerance_String = CreateTolerance(rmax, rmax, gmax, gmax, bmax, bmax)]]></code></stage><stage stageid="1994817e-bebc-475b-be0e-9dc035ae289e" name="Blue Tolerance Percent" type="Data"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><display x="180" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="f9f6f0f1-2cf9-4f47-aaae-44fff95d0fa9" name="Green Tolerance Percent" type="Data"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><display x="135" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="6c7c0eca-84b8-45e5-b3a6-66ffe09e64b2" name="Red Tolerance Percent" type="Data"><subsheetid>17ea9148-52fe-4e59-9810-687c9d6bcf87</subsheetid><display x="90" y="-105" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="e1f39e68-8325-4071-b601-43cfd2bf680e" name="Find Image" type="SubSheetInfo"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><narrative>Finds the specified image using the specific color tolerance and returns the top-left coordinates.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="9c9e3c85-c2b4-44e6-9c69-47c125492a2b" name="Start" type="Start"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="image" name="Image" narrative="Image to seach the screen for." stage="Image" /><input type="text" name="Tolerance" narrative="Color tolerance (created via Create Tolerance) when finding the image." stage="Tolerance" /></inputs><onsuccess>f6f19f61-199e-43af-9c30-de54347a7006</onsuccess></stage><stage stageid="da4f20f9-4ac8-451b-92d1-283e864222af" name="End" type="End"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><loginhibit /><display x="15" y="-15" /><outputs><output type="flag" name="Contains" narrative="Whether or not the image was found." stage="Contains" /><output type="number" name="X Index" narrative="X-Axis coordinate of the image." stage="X Index" /><output type="number" name="Y Index" narrative="Y-Axis coordinate of the image." stage="Y Index" /></outputs></stage><stage stageid="0f8df251-5136-4da8-96b8-d8f1a72fe67e" name="Image" type="Data"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><display x="90" y="-105" /><datatype>image</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="a928723d-2ff2-44c4-967c-949420f306b4" name="Tolerance" type="Data"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><display x="135" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="a6c6f0a1-d238-41fc-bfc0-ac8bc3c63702" name="Contains" type="Data"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><display x="90" y="-15" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="547ff637-5d57-410a-86d3-ca8afedde868" name="X Index" type="Data"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><display x="135" y="-15" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="505b663b-8dc5-4122-b1bf-cd63d6ac8530" name="Y Index" type="Data"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><display x="180" y="-15" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="f6f19f61-199e-43af-9c30-de54347a7006" name="Find_Image" type="Code"><subsheetid>ac71f86f-7103-4fd1-8f8e-34b8cca5a569</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="image" name="Image" expr="[Image]" /><input type="text" name="Tol" expr="[Tolerance]" /></inputs><outputs><output type="flag" name="Contains" stage="Contains" /><output type="number" name="X_Index" stage="X Index" /><output type="number" name="Y_Index" stage="Y Index" /></outputs><onsuccess>da4f20f9-4ac8-451b-92d1-283e864222af</onsuccess><code><![CDATA[Dim p As Point = FindBitmap(GetScreenshot(), Image, GetToleranceFromString(Tol))
+If (p.X >= 0 AndAlso p.Y >= 0) Then
+	Contains = True
+	X_Index = p.X
+	Y_Index = p.Y
+Else
+	Contains = False
+	X_Index = -1
+	Y_Index = -1
+End If]]></code></stage><stage stageid="c86d2e26-3a9b-4454-9897-5951bafe06d0" name="Wait for Image Appearance" type="SubSheetInfo"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><narrative>Waits for the specified image to appear then returns the coordinates. Basically a timed version of Find Image.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="9110e363-8475-4728-a45e-779ad1246d6d" name="Start" type="Start"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="image" name="Image" narrative="Image to search the screen for." stage="Image" /><input type="text" name="Tolerance" narrative="Color tolerance (Created via Create Tolerance) when finding the image." stage="Tolerance" /><input type="timespan" name="Max Wait" narrative="Maximum amount of time to wait before timing out." stage="Max Wait" /></inputs><onsuccess>46ed2d09-06e5-4cf4-aa88-cb838d8f59c4</onsuccess></stage><stage stageid="d4fe270c-a1e3-40b2-b194-aac8b248b313" name="End" type="End"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><loginhibit /><display x="15" y="-15" /><outputs><output type="flag" name="Contains" narrative="Whether or not the image was found in the time specified." stage="Contains" /><output type="number" name="X Index" narrative="X-Axis coordinate of the image." stage="X Index" /><output type="number" name="Y Index" narrative="Y-Axis coordinate of the image" stage="Y Index" /></outputs></stage><stage stageid="60333c22-0cdf-4854-86a3-1dfdf0b5e491" name="Image" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="90" y="-105" /><datatype>image</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="3d4c786d-411b-4994-b9fd-f66591265d33" name="Tolerance" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="135" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="3c30ad0e-f42a-4447-a199-83d0a1bb45d4" name="Max Wait" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="180" y="-105" /><datatype>timespan</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="5573b4cd-9eab-4899-99f2-eac5450f3881" name="Contains" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="90" y="-15" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="959783ea-5e1a-4f70-a29b-28f6d94c301c" name="X Index" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="135" y="-15" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="e0ebf3e2-743b-466a-bf12-5f58d98e0f34" name="Y Index" type="Data"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><display x="180" y="-15" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="46ed2d09-06e5-4cf4-aa88-cb838d8f59c4" name="Image_Appears" type="Code"><subsheetid>7989bc95-0170-43b4-8bf8-bd4ee2e7cbc3</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="image" name="Image" expr="[Image]" /><input type="text" name="Tol" expr="[Tolerance]" /><input type="timespan" name="Max Wait" expr="[Max Wait]" /></inputs><outputs><output type="flag" name="Contains" stage="Contains" /><output type="number" name="X_Index" stage="X Index" /><output type="number" name="Y_Index" stage="Y Index" /></outputs><onsuccess>d4fe270c-a1e3-40b2-b194-aac8b248b313</onsuccess><code><![CDATA[Contains = False
+Dim StartTime As DateTime = DateTime.Now
+
+' Keep this as a do-while loop and not a while loop, 
+' otherwise if someone specifies 0 on the time span, 
+' this may not execute the first time.
+Do
+	Find_Image(Image, Tol, Contains, X_Index, Y_Index)
+Loop While Contains = False And DateTime.Now - StartTime < Max_Wait
+
+If Not Contains Then
+	' Perform one final check. This is to guard against race
+	' conditions if the DW is running particularly slow.
+	Find_Image(Image, Tol, Contains, X_Index, Y_Index)
+End If]]></code></stage><stage stageid="b8d0a3fb-2269-45e8-9ada-9a971109f950" name="Wait for Image Disappearance" type="SubSheetInfo"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><narrative>Waits for the specified image to disappear from the screen.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="3e1c3789-4883-4509-aec4-b477206bab45" name="Start" type="Start"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="image" name="Image" narrative="Image to search the screen for." stage="Image" /><input type="text" name="Tolerance" narrative="Color tolerance (Created via Create Tolerance) when finding the image." stage="Tolerance" /><input type="timespan" name="Max Wait" narrative="Maximum amount of time to wait before timing out." stage="Max Wait" /></inputs><onsuccess>6e6b8a42-f633-4e15-ad8f-9bd18eb30414</onsuccess></stage><stage stageid="9db1ff27-4664-42aa-9c88-4f6d1c2be198" name="End" type="End"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><loginhibit /><display x="15" y="-15" /><outputs><output type="flag" name="Disappeared" narrative="Indicates whether the image disappeared from the screen or not. True means the image is gone, false means it is still present (think of this as a success flag)." stage="Disappeared" /></outputs></stage><stage stageid="3e01338d-b5d5-4999-994e-51bdf119361a" name="Image" type="Data"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><display x="90" y="-105" /><datatype>image</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="4e387b3c-42b2-4c45-82ac-ea19bc96443a" name="Tolerance" type="Data"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><display x="135" y="-105" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="811a1bcd-fcc4-47a4-8055-bee983a1c1a6" name="Max Wait" type="Data"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><display x="180" y="-105" /><datatype>timespan</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="6e6b8a42-f633-4e15-ad8f-9bd18eb30414" name="Image_Disappears" type="Code"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="image" name="Image" expr="[Image]" /><input type="text" name="Tol" expr="[Tolerance]" /><input type="timespan" name="Max Wait" expr="[Max Wait]" /></inputs><outputs><output type="flag" name="Disappeared" stage="Disappeared" /></outputs><onsuccess>9db1ff27-4664-42aa-9c88-4f6d1c2be198</onsuccess><code><![CDATA[Dim StartTime As DateTime = DateTime.Now
+Dim Contains As Boolean = False
+
+Do
+	Find_Image(Image, Tol, Contains, 0, 0)
+Loop While Contains = True And DateTime.Now - StartTime < Max_Wait
+
+If Contains Then
+	' Perform one final check. This is to guard against race
+	' conditions if the DW is running particularly slow.
+	Find_Image(Image, Tol, Contains, 0, 0)
+End If
+
+Disappeared = Not Contains]]></code></stage><stage stageid="ff222f4c-c20d-44c9-b84b-f5411dff86b6" name="Disappeared" type="Data"><subsheetid>8101e12e-c18b-48b2-97b2-4da4cfd7e9f7</subsheetid><display x="90" y="-15" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage><stage stageid="112ce6c3-e5cc-44fc-8cf8-7e6f911fc5a4" name="Move mouse (fast)" type="SubSheetInfo"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><narrative>Jumps the mouse to the specified screen coordinates</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="cfe65a9c-7c43-4fb9-a770-6cfb737e3231" name="Start" type="Start"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="number" name="Coord X" narrative="Specifies the X coordinate to move the mouse to" stage="Coord X" /><input type="number" name="Coord Y" narrative="Specifies the Y coordinate to move the mouse to" stage="Coord Y" /></inputs><onsuccess>65ce5437-0c2f-4ec7-a45c-7c68d6312579</onsuccess></stage><stage stageid="89a341ff-b2d4-426d-99a6-0537c24e7b29" name="End" type="End"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><loginhibit /><display x="15" y="-15" /></stage><stage stageid="dc7c6e28-cfca-4cee-a794-53b59599bb07" name="Coord X" type="Data"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><display x="120" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="b882b9a9-ef5f-4cef-b3c6-1ca287159ed1" name="Coord Y" type="Data"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><display x="165" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="65ce5437-0c2f-4ec7-a45c-7c68d6312579" name="Move_Mouse_Fast" type="Code"><subsheetid>0057e9bc-40c5-4e68-8277-ac5727dcdcf2</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="number" name="mouse_X" expr="[Coord X]" /><input type="number" name="mouse_Y" expr="[Coord Y]" /></inputs><onsuccess>89a341ff-b2d4-426d-99a6-0537c24e7b29</onsuccess><code><![CDATA[' Move the mouse
+Dim CursorPos As New Point(mouse_X, mouse_Y)
+System.Windows.Forms.Cursor.Position = CursorPos]]></code></stage><stage stageid="775a45bf-5cc1-40a7-a0e0-0b2fa3b259bb" name="Move mouse (tweened)" type="SubSheetInfo"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><narrative>Simulates mouse movements to move the mouse to the specified coordinates. Moves across X, then across Y.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="5067758c-d5a4-4efb-b879-6ed02e59886f" name="Start" type="Start"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="number" name="Coord X" narrative="Specifies the X coordinate to move the mouse to" stage="Coord X" /><input type="number" name="Coord Y" narrative="Specifies the Y coordinate to move the mouse to" stage="Coord Y" /></inputs><onsuccess>5d9a082f-02d6-4796-825a-6e7f62b2feeb</onsuccess></stage><stage stageid="2ca22599-c8c7-4c02-8c05-d989937bed99" name="End" type="End"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><loginhibit /><display x="15" y="-15" /></stage><stage stageid="a18b45f0-614e-4364-bd46-f9451aefb95c" name="Coord X" type="Data"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><display x="120" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="926d887f-97a3-4d38-baa4-ff7f88963ac7" name="Coord Y" type="Data"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><display x="165" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="5d9a082f-02d6-4796-825a-6e7f62b2feeb" name="Move_Mouse_Tweened" type="Code"><subsheetid>2fd21d4f-3b26-45b9-b07a-a7267caf5d44</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="number" name="mouse_X" expr="[Coord X]" /><input type="number" name="mouse_Y" expr="[Coord Y]" /></inputs><onsuccess>2ca22599-c8c7-4c02-8c05-d989937bed99</onsuccess><code><![CDATA[Dim startPos As New Point
+startPos = System.Windows.Forms.Cursor.Position
+' Move the mouse over X
+if startPos.X > mouse_X
+	dim a as integer = startPos.x
+	while a > mouse_X
+		a-=1
+		Dim CursorPos As New Point(a, startPos.Y)
+		System.Windows.Forms.Cursor.Position = CursorPos
+	end while
+else
+	dim a as integer = startPos.x
+	while a < mouse_X
+		a+=1
+		Dim CursorPos As New Point(a, startPos.Y)
+		System.Windows.Forms.Cursor.Position = CursorPos
+	end while
+end if
+
+' Now move the mouse over X
+if startPos.Y > mouse_Y
+	dim a as integer = startPos.y
+	while a > mouse_Y
+		a-=1
+		Dim CursorPos As New Point(mouse_X, a)
+		System.Windows.Forms.Cursor.Position = CursorPos
+	end while
+else
+	dim a as integer = startPos.Y
+	while a < mouse_Y
+		a+=1
+		Dim CursorPos As New Point(mouse_X, a)
+		System.Windows.Forms.Cursor.Position = CursorPos
+	end while
+end if
+
+]]></code></stage><stage stageid="0ae68f4c-c5fc-4b13-90a8-3ab27fa05797" name="Move mouse (tweened with wait)" type="SubSheetInfo"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><narrative>Simulates mouse movements to move the mouse to the specified coordinates. Moves across X, then across Y. Additional input to allow delay time between coordinate steps, in decimal format.</narrative><display x="-195" y="-105" w="150" h="90" /></stage><stage stageid="dfe110f2-7e86-4465-a570-6bdc14e18ae1" name="Start" type="Start"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><loginhibit /><display x="15" y="-105" /><inputs><input type="number" name="Coord X" narrative="Specifies the X coordinate to move the mouse to" stage="Coord X" /><input type="number" name="Coord Y" narrative="Specifies the Y coordinate to move the mouse to" stage="Coord Y" /><input type="number" name="stepInterval" narrative="Number of seconds to wait between coordinate steps (This can use decimal!)" stage="stepInterval" /></inputs><onsuccess>fc0d52d8-7f73-4bd3-a2fd-f95e4a8c2dc4</onsuccess></stage><stage stageid="574b3552-4b27-4ffd-a82f-8e2d52d5b6dc" name="End" type="End"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><loginhibit /><display x="15" y="-15" /></stage><stage stageid="fb6fa850-dcaf-4b34-aa64-7e9f6bb49796" name="Coord X" type="Data"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><display x="120" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="08b3a916-ba18-4808-b3ff-6e955073fbd3" name="Coord Y" type="Data"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><display x="165" y="-105" /><datatype>number</datatype><initialvalue>20</initialvalue><private /><alwaysinit /></stage><stage stageid="fc0d52d8-7f73-4bd3-a2fd-f95e4a8c2dc4" name="Move_Mouse_Tweened_with_wait" type="Code"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><loginhibit /><display x="15" y="-60" /><inputs><input type="number" name="mouse_X" expr="[Coord X]" /><input type="number" name="mouse_Y" expr="[Coord Y]" /><input type="number" name="stepInterval" expr="[stepInterval]" /></inputs><onsuccess>574b3552-4b27-4ffd-a82f-8e2d52d5b6dc</onsuccess><code><![CDATA[Dim startPos As New Point
+startPos = System.Windows.Forms.Cursor.Position
+' Move the mouse over X
+if startPos.X > mouse_X
+	dim a as integer = startPos.x
+	while a > mouse_X
+		a-=1
+		Dim CursorPos As New Point(a, startPos.Y)
+		System.Windows.Forms.Cursor.Position = CursorPos
+		wait(stepInterval)
+	end while
+else
+	dim a as integer = startPos.x
+	while a < mouse_X
+		a+=1
+		Dim CursorPos As New Point(a, startPos.Y)
+		System.Windows.Forms.Cursor.Position = CursorPos
+		wait(stepInterval)
+	end while
+end if
+
+' Now move the mouse over X
+if startPos.Y > mouse_Y
+	dim a as integer = startPos.y
+	while a > mouse_Y
+		a-=1
+		Dim CursorPos As New Point(mouse_X, a)
+		System.Windows.Forms.Cursor.Position = CursorPos
+		wait(stepInterval)
+	end while
+else
+	dim a as integer = startPos.Y
+	while a < mouse_Y
+		a+=1
+		Dim CursorPos As New Point(mouse_X, a)
+		System.Windows.Forms.Cursor.Position = CursorPos
+		wait(stepInterval)
+	end while
+end if
+
+]]></code></stage><stage stageid="2345f994-6c1a-4ab4-baaa-73ccdc747780" name="stepInterval" type="Data"><subsheetid>0a34c9e5-2a2b-48e0-9964-1047456c956b</subsheetid><display x="210" y="-105" /><datatype>number</datatype><initialvalue>0.025</initialvalue><private /><alwaysinit /></stage></process></object>
+        <object-group id="be68aafc-7ce6-43de-810e-7f194e000a0a" name="Utility Objects" isDefaultGroup="False" xmlns="http://www.blueprism.co.uk/product/object-group">
+            <members>
+                <object id="e37756c0-2ea5-4a1d-9ac8-036ff590da8f" />
+            </members>
+        </object-group>
+    </bpr:contents>
+</bpr:release>
